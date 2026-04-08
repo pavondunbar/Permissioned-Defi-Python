@@ -1,7 +1,7 @@
 # Permissioned DeFi Compliance Engine
 
 > **Sandbox / Educational Project**
-> This is a sandbox environment for learning and testing. It simulates a permissioned DeFi compliance engine with institutional-grade settlement infrastructure, MPC threshold signing, and regulatory compliance enforcement. **Not for production use** — see [Production Considerations](#production-considerations) for what a real deployment would require.
+> This is a sandbox environment for learning and testing. It simulates a permissioned DeFi compliance engine with institutional-grade settlement infrastructure, MPC threshold signing, and regulatory compliance enforcement. **Not for production use** — see the [Production Warning](#-production-warning) section for full details.
 
 ---
 
@@ -17,7 +17,7 @@
 - [Real-World Example](#real-world-example)
 - [Running in a Sandbox Environment](#running-in-a-sandbox-environment)
 - [Project Structure](#project-structure)
-- [Production Considerations](#production-considerations)
+- [Production Warning](#-production-warning)
 - [License](#license)
 
 ---
@@ -564,24 +564,30 @@ Permissioned-Defi/
 
 ---
 
-## Production Considerations
+## 🚨 Production Warning
 
-This sandbox demonstrates architectural patterns. A production deployment would additionally require:
+**This project is explicitly NOT suitable for production use.** Permissioned DeFi settlement is among the most regulated, operationally complex, and legally sensitive activities in institutional financial services. The following critical components are absent or stubbed:
 
-| Component | What's Missing |
-|-----------|---------------|
-| TLS / mTLS | All inter-service communication is plaintext HTTP |
-| Secret Management | Database credentials are in docker-compose.yml; use Vault/KMS |
-| HSM Integration | MPC nodes simulate key material; real deployment uses hardware security modules |
-| Real Blockchain | Settlement broadcast/confirm is simulated; integrate actual chain RPC |
-| Authentication | API keys are static strings; use OAuth 2.0 / JWT with proper rotation |
-| Rate Limiting | No request throttling on the API gateway |
-| Horizontal Scaling | Single-instance services; add load balancing and replica sets |
-| Monitoring & Alerting | No Prometheus/Grafana/PagerDuty integration |
-| Backup & DR | No automated database backups or disaster recovery procedures |
-| Compliance Feeds | Sanctions/PEP screening uses a static list; integrate real data providers |
-| Penetration Testing | No security audit has been performed |
-| Kafka Hardening | Single-broker, no authentication, no encryption; use SASL + TLS in production |
+| Missing Component | Risk if Absent |
+|-------------------|----------------|
+| TLS / mTLS between services | All inter-service traffic is plaintext — interceptable on any shared network |
+| Secret management (Vault / KMS) | Database credentials are in docker-compose.yml — exposed in version control |
+| HSM-backed key material (Thales / Fireblocks) | MPC nodes simulate key shares in software — private keys are exposed |
+| Real blockchain RPC integration | Settlement broadcast/confirm is simulated — no actual on-chain finality |
+| Production authentication (OAuth 2.0 / mTLS / JWT) | API keys are static strings — RBAC is enforced but actors are not authenticated against an identity provider |
+| Rate limiting & position limits | No controls on request volume or settlement size |
+| Horizontal scaling & load balancing | Single-instance services — no failover or replica sets |
+| Monitoring & alerting (Prometheus / Grafana / PagerDuty) | No observability into service health or anomaly detection |
+| Backup & disaster recovery | No automated database backups or tested failover procedures |
+| Real compliance data feeds (ComplyAdvantage / Refinitiv) | Sanctions/PEP/AML screening uses a static stub list — no actual screening |
+| Security audit & penetration testing | No security audit has been performed on any service |
+| Kafka hardening (SASL + TLS, multi-broker) | Single broker, no authentication, no encryption — messages are plaintext |
+| Smart contract audit | No formal verification or audit of escrow/settlement logic |
+| Regulatory compliance (MiFID II / EMIR / MiCA) | No post-trade reporting or regulatory filing integration |
+| Dead-letter queue replay tooling | Failed events require manual developer intervention |
+| Comprehensive test suite | Untested edge cases in fund handling and state transitions |
+
+> Permissioned DeFi settlement at institutional scale requires: licensed financial entity status, regulatory approval for digital asset custody, HSM/MPC infrastructure with certified key management, real blockchain connectivity, SWIFT/payment rail integration, and legal agreements with all counterparties. **Do not use this code to settle, manage, or transfer any real digital assets or funds.**
 
 ---
 
@@ -591,4 +597,4 @@ This project is licensed under the MIT License.
 
 ---
 
-Built with &#9829; by [Pavon Dunbar](https://github.com/pavondunbar)
+Built with ❤️ by [Pavon Dunbar](https://github.com/pavondunbar)
