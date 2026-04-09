@@ -491,12 +491,30 @@ make demo
 | `make up` | Build and start all services |
 | `make down` | Stop containers (keep volumes) |
 | `make down-v` | Stop containers and remove volumes (full reset) |
+| `make build` | Rebuild all images without starting |
+| `make restart` | Restart all services (no rebuild) |
 | `make logs` | Follow all service logs |
 | `make ps` | Show container status |
 | `make health` | Check gateway health (aggregated) |
 | `make demo` | Run the end-to-end demo |
+
+### Testing
+
+| Command | Description |
+|---------|-------------|
+| `make test` | Run unit tests + e2e if services are up |
+| `make test-unit` | Run unit tests only (no Docker required) |
+| `make test-e2e` | Run end-to-end demo (requires running services) |
+
+### Debugging
+
+| Command | Description |
+|---------|-------------|
 | `make shell-pg` | Open psql shell |
+| `make shell-kafka` | Open a shell in the Kafka container |
 | `make topics` | List Kafka topics |
+| `make kafka-tail` | Tail Kafka messages across all topics (Ctrl+C to stop) |
+| `make integrity` | Verify latest reconciliation pass/fail per check type |
 
 ### Inspecting the Database
 

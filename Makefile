@@ -6,7 +6,8 @@ CYAN  := \033[36m
 GREEN := \033[32m
 RED   := \033[31m
 
-.PHONY: help up down down-v build logs ps health demo test shell-pg \
+.PHONY: help up down down-v build restart logs ps health demo test \
+        test-unit test-e2e shell-pg shell-kafka integrity kafka-tail \
         db-journal db-balances db-audit db-settlements db-recon topics
 
 help: ## Show this help
@@ -30,6 +31,10 @@ down-v: ## Stop containers AND remove volumes (full reset)
 build: ## Rebuild all images without starting
 	$(COMPOSE) build --no-cache
 
+restart: ## Restart all services (no rebuild)
+	$(COMPOSE) restart
+	@echo "$(GREEN)All services restarted.$(RESET)"
+
 logs: ## Follow all service logs
 	$(COMPOSE) logs -f
 
@@ -44,11 +49,28 @@ demo: ## Run the end-to-end demo
 	GATEWAY_URL=http://localhost:8000 API_KEY=admin-key-demo-001 \
 	  python3 scripts/demo.py
 
-test: ## Run unit tests (no Docker required)
+test: ## Run all tests (unit + e2e if services are up)
 	python3 -m pytest tests/ -v
+	@curl -sf http://localhost:8000/health > /dev/null 2>&1 && \
+	  { echo "$(CYAN)Services detected — running e2e...$(RESET)"; \
+	    GATEWAY_URL=http://localhost:8000 API_KEY=admin-key-demo-001 \
+	      python3 scripts/demo.py; } || \
+	  echo "$(CYAN)Services not running — skipping e2e.$(RESET)"
+
+test-unit: ## Run unit tests only (no Docker required)
+	python3 -m pytest tests/ -v
+
+test-e2e: ## Run end-to-end demo (requires running services)
+	@curl -sf http://localhost:8000/health > /dev/null 2>&1 || \
+	  { echo "$(RED)Services not running — run 'make up' first$(RESET)"; exit 1; }
+	GATEWAY_URL=http://localhost:8000 API_KEY=admin-key-demo-001 \
+	  python3 scripts/demo.py
 
 shell-pg: ## Open psql shell
 	$(COMPOSE) exec postgres psql -U defi_user -d defi_db
+
+shell-kafka: ## Open a shell in the Kafka container
+	$(COMPOSE) exec kafka bash
 
 db-journal: ## Show recent journal entries
 	$(COMPOSE) exec postgres psql -U defi_user -d defi_db -c \
@@ -78,6 +100,23 @@ db-recon: ## Show reconciliation run history
 
 topics: ## List Kafka topics
 	$(COMPOSE) exec kafka kafka-topics --bootstrap-server localhost:9092 --list
+
+kafka-tail: ## Tail Kafka messages across all topics (Ctrl+C to stop)
+	$(COMPOSE) exec kafka kafka-console-consumer \
+	  --bootstrap-server localhost:9092 \
+	  --include '.*' \
+	  --property print.topic=true \
+	  --property print.timestamp=true
+
+integrity: ## Verify latest reconciliation pass/fail per check type
+	@$(COMPOSE) exec -T postgres psql -U defi_user -d defi_db -c \
+	  "SELECT run_type AS check, status, mismatches, completed_at \
+	   FROM reconciliation_runs r1 \
+	   WHERE started_at = ( \
+	     SELECT MAX(started_at) FROM reconciliation_runs r2 \
+	     WHERE r2.run_type = r1.run_type) \
+	   ORDER BY run_type;" \
+	  || echo "$(RED)Cannot connect — run 'make up' first$(RESET)"
 
 db-outbox: ## Show outbox event delivery status
 	$(COMPOSE) exec postgres psql -U defi_user -d defi_db -c \
