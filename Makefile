@@ -6,7 +6,7 @@ CYAN  := \033[36m
 GREEN := \033[32m
 RED   := \033[31m
 
-.PHONY: help up down down-v build logs ps health demo shell-pg \
+.PHONY: help up down down-v build logs ps health demo test shell-pg \
         db-journal db-balances db-audit db-settlements db-recon topics
 
 help: ## Show this help
@@ -43,6 +43,9 @@ health: ## Check gateway health (aggregated)
 demo: ## Run the end-to-end demo
 	GATEWAY_URL=http://localhost:8000 API_KEY=admin-key-demo-001 \
 	  python3 scripts/demo.py
+
+test: ## Run unit tests (no Docker required)
+	python3 -m pytest tests/ -v
 
 shell-pg: ## Open psql shell
 	$(COMPOSE) exec postgres psql -U defi_user -d defi_db
