@@ -1,5 +1,8 @@
 # Permissioned DeFi Compliance Engine
 
+<img width="1607" height="979" alt="permissioned-defi" src="https://github.com/user-attachments/assets/5ecb887f-edd2-4639-ac4b-ed2bc23f412a" />
+
+
 > **Sandbox / Educational Project**
 > This is a sandbox environment for learning and testing. It simulates a permissioned DeFi compliance engine with institutional-grade settlement infrastructure, MPC threshold signing, and regulatory compliance enforcement. **Not for production use** — see the [Production Warning](#-production-warning) section for full details.
 
